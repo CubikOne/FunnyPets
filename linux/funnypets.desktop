@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=FunnyPets
+Comment=Pixel desktop pet
+Exec=python3 /opt/funnypets/linux/funnypets.py
+Icon=applications-games
+Terminal=false
+Categories=Utility;
+X-GNOME-Autostart-enabled=true
