@@ -2,8 +2,8 @@
 set -e
 cd "$(dirname "$0")"
 
-APP="ComNyan.app"
-BIN="ComNyan"
+APP="FunnyPets.app"
+BIN="FunnyPets"
 
 echo "→ compiling"
 mkdir -p build
@@ -19,10 +19,11 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>ComNyan</string>
-    <key>CFBundleDisplayName</key><string>ComNyan</string>
+    <key>CFBundleName</key><string>FunnyPets</string>
+    <key>CFBundleDisplayName</key><string>FunnyPets</string>
+    <!-- identifier stays the same so user prefs (coat, names, position) survive the rename -->
     <key>CFBundleIdentifier</key><string>com.timur.comnyan</string>
-    <key>CFBundleExecutable</key><string>ComNyan</string>
+    <key>CFBundleExecutable</key><string>FunnyPets</string>
     <key>CFBundleIconFile</key><string>AppIcon</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>1.0</string>

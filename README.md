@@ -1,7 +1,7 @@
 # FunnyPets 🐈🐹
 
 Пиксельные питомцы (кот и хомяк), которые живут на рабочем столе.
-macOS — нативное приложение **ComNyan.app** (Swift/AppKit),
+macOS — нативное приложение **FunnyPets.app** (Swift/AppKit),
 Linux (Debian 13+) — порт на Python/GTK в [linux/](linux/).
 Вдохновлено [comnyang.com](https://comnyang.com/en).
 
@@ -65,8 +65,8 @@ Hooks в `~/.claude/settings.json` пишут состояние в `~/.comnyan/
 ## Сборка (macOS)
 
 ```sh
-./build.sh          # соберёт ComNyan.app
-open ComNyan.app
+./build.sh          # соберёт FunnyPets.app
+open FunnyPets.app
 ```
 
 Нужны только Xcode Command Line Tools (swiftc). Без зависимостей, без телеметрии.
@@ -91,7 +91,7 @@ python3 linux/funnypets.py
 
 ## Отладка (macOS)
 
-Переменные окружения при запуске `./ComNyan.app/Contents/MacOS/ComNyan`:
+Переменные окружения при запуске `./FunnyPets.app/Contents/MacOS/FunnyPets`:
 
 - `COMNYAN_SNAPSHOT=/tmp/x` — через 1.5 с сохранит рендер питомца и пузыря
   в `/tmp/x-cat.png` / `/tmp/x-bubble.png`
