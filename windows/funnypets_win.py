@@ -201,7 +201,7 @@ class Pet:
         self.walk_hop = None
         self.peeking = False
 
-        self.install_scroll_hook()
+        self.install_scroll_watch()
 
         h = time.localtime().tm_hour
         hello = ('мяу… не пора ли спать? 🌙' if h >= 23 or h < 5 else
@@ -246,21 +246,70 @@ class Pet:
             except Exception:
                 pass
 
-    # ---------- scroll hook (для рулона бумаги) ----------
-    def install_scroll_hook(self):
+    # ---------- scroll watch (для рулона бумаги) ----------
+    def install_scroll_watch(self):
+        """Скролл через Raw Input (RIDEV_INPUTSINK): наблюдаем колесо СБОКУ,
+        не вставая в цепочку доставки событий. Низкоуровневый хук WH_MOUSE_LL
+        здесь недопустим: Windows ждёт наш Python-колбэк на каждое движение
+        мыши, и пока Python занят отрисовкой, мышь виснет у всей системы."""
         try:
-            WH_MOUSE_LL, WM_MOUSEWHEEL = 14, 0x020A
-            proto = ctypes.WINFUNCTYPE(ctypes.c_long, ctypes.c_int, wt.WPARAM, wt.LPARAM)
+            self.root.update_idletasks()
+            GA_ROOT = 2
+            hwnd = user32.GetAncestor(self.root.winfo_id(), GA_ROOT)
 
-            def proc(n, w, l):
-                if w == WM_MOUSEWHEEL:
-                    self.last_scroll = time.time()
-                return user32.CallNextHookEx(None, n, w, l)
+            class RAWINPUTDEVICE(ctypes.Structure):
+                _fields_ = [('usUsagePage', wt.USHORT), ('usUsage', wt.USHORT),
+                            ('dwFlags', wt.DWORD), ('hwndTarget', wt.HWND)]
 
-            self._hook_proc = proto(proc)   # держим ссылку от GC
-            self._hook = user32.SetWindowsHookExW(WH_MOUSE_LL, self._hook_proc, None, 0)
+            RIDEV_INPUTSINK = 0x00000100
+            rid = RAWINPUTDEVICE(1, 2, RIDEV_INPUTSINK, hwnd)   # generic mouse
+            if not user32.RegisterRawInputDevices(ctypes.byref(rid), 1, ctypes.sizeof(rid)):
+                return
+
+            class RAWINPUTHEADER(ctypes.Structure):
+                _fields_ = [('dwType', wt.DWORD), ('dwSize', wt.DWORD),
+                            ('hDevice', wt.HANDLE), ('wParam', wt.WPARAM)]
+
+            class RAWMOUSE(ctypes.Structure):
+                _fields_ = [('usFlags', wt.USHORT), ('_pad', wt.USHORT),
+                            ('usButtonFlags', wt.USHORT), ('usButtonData', wt.USHORT),
+                            ('ulRawButtons', wt.ULONG), ('lLastX', ctypes.c_long),
+                            ('lLastY', ctypes.c_long), ('ulExtraInformation', wt.ULONG)]
+
+            class RAWINPUT(ctypes.Structure):
+                _fields_ = [('header', RAWINPUTHEADER), ('mouse', RAWMOUSE)]
+
+            WM_INPUT = 0x00FF
+            RID_INPUT = 0x10000003
+            RI_MOUSE_WHEEL = 0x0400
+            GWL_WNDPROC = -4
+            WNDPROC = ctypes.WINFUNCTYPE(ctypes.c_ssize_t, ctypes.c_void_p, ctypes.c_uint,
+                                         ctypes.c_size_t, ctypes.c_ssize_t)
+            user32.CallWindowProcW.restype = ctypes.c_ssize_t
+            user32.CallWindowProcW.argtypes = [ctypes.c_void_p, ctypes.c_void_p,
+                                               ctypes.c_uint, ctypes.c_size_t, ctypes.c_ssize_t]
+            user32.SetWindowLongPtrW.restype = ctypes.c_void_p
+            user32.SetWindowLongPtrW.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_void_p]
+
+            def wnd_proc(h, msg, w, l):
+                if msg == WM_INPUT:
+                    try:
+                        size = wt.UINT(ctypes.sizeof(RAWINPUT))
+                        ri = RAWINPUT()
+                        got = user32.GetRawInputData(l, RID_INPUT, ctypes.byref(ri),
+                                                     ctypes.byref(size),
+                                                     ctypes.sizeof(RAWINPUTHEADER))
+                        if got > 0 and ri.header.dwType == 0 and ri.mouse.usButtonFlags & RI_MOUSE_WHEEL:
+                            self.last_scroll = time.time()
+                    except Exception:
+                        pass
+                return user32.CallWindowProcW(self._old_proc, h, msg, w, l)
+
+            self._wnd_proc = WNDPROC(wnd_proc)   # держим ссылку от GC
+            self._old_proc = user32.SetWindowLongPtrW(hwnd, GWL_WNDPROC,
+                                                      ctypes.cast(self._wnd_proc, ctypes.c_void_p))
         except Exception:
-            self._hook = None
+            pass
 
     # ---------- colors ----------
     def cell_color(self, x, y, ch, hot):
