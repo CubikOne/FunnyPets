@@ -796,6 +796,11 @@ final class BubbleView: NSView {
     }
 }
 
+// AppKit clamps any window below the menu bar; the pet must be free to reach the very top
+final class PetWindow: NSWindow {
+    override func constrainFrameRect(_ frameRect: NSRect, to screen: NSScreen?) -> NSRect { frameRect }
+}
+
 // MARK: - Controller
 
 final class Controller: NSObject, NSApplicationDelegate {
@@ -913,8 +918,8 @@ final class Controller: NSObject, NSApplicationDelegate {
 
     func setupWindows() {
         let size = CatView.windowSize(scale: Prefs.scale)
-        window = NSWindow(contentRect: NSRect(origin: .zero, size: size),
-                          styleMask: [.borderless], backing: .buffered, defer: false)
+        window = PetWindow(contentRect: NSRect(origin: .zero, size: size),
+                           styleMask: [.borderless], backing: .buffered, defer: false)
         window.isOpaque = false
         window.backgroundColor = .clear
         window.hasShadow = false
@@ -1776,9 +1781,10 @@ final class Controller: NSObject, NSApplicationDelegate {
         let wf = window.frame
         let size = bubbleWindow.frame.size
         var x = wf.midX - size.width/2
-        let y = wf.maxY - 4
+        var y = wf.maxY - 4
         if let scr = window.screen ?? NSScreen.main {
             x = max(scr.visibleFrame.minX + 4, min(x, scr.visibleFrame.maxX - size.width - 4))
+            y = min(y, scr.frame.maxY - size.height)   // keep the bubble on screen at the very top
         }
         bubbleWindow.setFrameOrigin(NSPoint(x: x, y: y))
         if !bubbleWindow.isVisible { bubbleWindow.orderFrontRegardless() }
