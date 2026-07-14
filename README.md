@@ -2,7 +2,9 @@
 
 Пиксельные питомцы (кот и хомяк), которые живут на рабочем столе.
 macOS — нативное приложение **FunnyPets.app** (Swift/AppKit),
-Linux (Debian 13+) — порт на Python/GTK в [linux/](linux/).
+Linux (Debian 13+) — порт на Python/GTK в [linux/](linux/),
+Windows 10/11 — порт на Python/tkinter в [windows/](windows/)
+(готовый exe собирается на GitHub Actions).
 Вдохновлено [comnyang.com](https://comnyang.com/en).
 
 ![Кот](preview.png)
@@ -12,8 +14,8 @@ Linux (Debian 13+) — порт на Python/GTK в [linux/](linux/).
 ## Функции
 
 Пункты 1–16 повторяют оригинальный comnyang, 17–20 — наши собственные.
-Таблица описывает macOS-версию; Linux-порт умеет подмножество —
-см. [linux/README.md](linux/README.md).
+Таблица описывает macOS-версию; порты умеют подмножество —
+см. [linux/README.md](linux/README.md) и [windows/README.md](windows/README.md).
 
 | # | Функция | Как работает |
 |---|---------|--------------|
@@ -80,6 +82,16 @@ python3 linux/funnypets.py
 
 Подробности и ограничения — в [linux/README.md](linux/README.md).
 
+## Windows (10/11)
+
+```bat
+python windows\funnypets_win.py
+```
+
+Или скачай готовый `FunnyPets.exe`: вкладка **Actions** →
+`build-windows-exe` → последний ран → артефакт `FunnyPets-windows`.
+Подробности — в [windows/README.md](windows/README.md).
+
 ## Файлы
 
 - `Sources/main.swift` — всё macOS-приложение (AppKit)
@@ -87,6 +99,7 @@ python3 linux/funnypets.py
 - `sprites.py` — редактор пиксель-арта: правишь кадры → `python3 sprites.py` → `./build.sh`.
   Генерирует и Swift-спрайты, и `linux/sprites.json` — источник один
 - `linux/funnypets.py` — Linux-порт (GTK3)
+- `windows/funnypets_win.py` — Windows-порт (tkinter + WinAPI)
 - `preview*.png` — превью кадров, окрасов и хомяка
 
 ## Отладка (macOS)
